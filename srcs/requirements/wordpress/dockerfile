@@ -1,0 +1,26 @@
+FROM debian:bullseye
+
+RUN apt update && apt install -y \
+    php \
+    php-fpm \
+    php-mysql \
+    php-cli \
+    netcat \
+    wget unzip \
+    && apt clean && rm -rf /var/lib/apt/lists/*
+
+
+RUN mkdir -p /var/www/html
+RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+chmod +x wp-cli.phar && \
+mv wp-cli.phar /usr/local/bin/wp
+
+
+EXPOSE 9000
+
+COPY www.conf /etc/php/7.4/fpm/pool.d
+
+# copy and run entrypoint
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["sh", "/usr/local/bin/entrypoint.sh"]
