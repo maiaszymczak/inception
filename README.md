@@ -7,7 +7,7 @@
 Inception is a system administration project that focuses on containerization using Docker. The goal is to set up a small infrastructure composed of different services following specific rules. This project creates a LEMP stack (Linux, Nginx, MariaDB, PHP) using Docker containers, where each service runs in its own dedicated container built from a custom Dockerfile.
 
 The infrastructure consists of:
-- **NGINX** with TLSv1.2 or TLSv1.3 only
+- **NGINX** with TLSv1.3 only
 - **WordPress** with php-fpm (without nginx)
 - **MariaDB** (without nginx)
 

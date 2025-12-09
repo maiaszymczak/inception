@@ -2,25 +2,6 @@
 
 This document provides technical information for developers working on the Inception project.
 
-## Table of Contents
-- [Environment Setup](#environment-setup)
-- [Build and Launch](#build-and-launch)
-- [Container Management](#container-management)
-- [Volume Management](#volume-management)
-- [Data Persistence](#data-persistence)
-- [Project Structure](#project-structure)
-- [Development Workflow](#development-workflow)
-
-## Environment Setup
-
-### Prerequisites
-
-Install the following software:
-- **Docker**: Version 20.10 or higher
-- **Docker Compose**: Version 2.0 or higher (comes with Docker Desktop)
-- **Make**: Should be pre-installed on macOS/Linux
-- **Text editor**: VS Code, vim, or your preferred editor
-
 ### Installation Verification
 
 ```bash
@@ -370,36 +351,6 @@ ls -la ~/data/wordpress
 ls -la ~/data/mariadb
 ```
 
-### Volume Operations
-
-#### Manual backup
-
-```bash
-# Backup WordPress
-tar -czf wordpress_backup_$(date +%Y%m%d).tar.gz -C ~/data wordpress
-
-# Backup MariaDB
-tar -czf mariadb_backup_$(date +%Y%m%d).tar.gz -C ~/data mariadb
-```
-
-#### Manual restore
-
-```bash
-# Stop services first
-make down
-
-# Restore WordPress
-rm -rf ~/data/wordpress
-tar -xzf wordpress_backup_YYYYMMDD.tar.gz -C ~/data
-
-# Restore MariaDB
-rm -rf ~/data/mariadb
-tar -xzf mariadb_backup_YYYYMMDD.tar.gz -C ~/data
-
-# Restart services
-make
-```
-
 #### Clear volume data
 
 ```bash
@@ -502,26 +453,6 @@ inception/
             └── www.conf              # PHP-FPM pool configuration
 ```
 
-### Service Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                        Host System                       │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │              Docker Network (inception)            │ │
-│  │                                                    │ │
-│  │  ┌──────────┐    ┌──────────┐    ┌──────────┐   │ │
-│  │  │  NGINX   │───▶│WordPress │───▶│ MariaDB  │   │ │
-│  │  │  :443    │    │   :9000  │    │  :3306   │   │ │
-│  │  └──────────┘    └──────────┘    └──────────┘   │ │
-│  │       │                │                │        │ │
-│  └───────┼────────────────┼────────────────┼────────┘ │
-│          │                │                │          │
-│          ▼                ▼                ▼          │
-│   ~/data/wordpress   ~/data/wordpress  ~/data/mariadb │
-└─────────────────────────────────────────────────────────┘
-```
-
 ### Configuration Files
 
 #### `docker-compose.yml`
@@ -578,48 +509,6 @@ make clean  # Clear data if entrypoint initializes database
 make
 ```
 
-### Testing Changes
-
-#### Run health checks
-
-```bash
-# NGINX config test
-docker exec nginx nginx -t
-
-# WordPress CLI
-docker exec wordpress wp --info --allow-root
-
-# Database connection
-docker exec wordpress wp db check --allow-root
-```
-
-#### Validate Docker Compose
-
-```bash
-docker compose -f srcs/docker-compose.yml config
-```
-
-#### Check for errors
-
-```bash
-# View recent logs
-docker compose -f srcs/docker-compose.yml logs --tail=50
-
-# Monitor logs in real-time
-make logs
-```
-
-### Debugging Tips
-
-#### Container won't start
-1. Check logs: `docker logs <container>`
-2. Verify Dockerfile syntax
-3. Test entrypoint script manually:
-   ```bash
-   docker run -it --rm <image> /bin/bash
-   sh /path/to/entrypoint.sh
-   ```
-
 #### Network connectivity issues
 ```bash
 # List networks
@@ -631,17 +520,6 @@ docker network inspect inception_inception
 # Test connectivity
 docker exec wordpress ping mariadb
 ```
-
-#### Permission issues
-```bash
-# Check file ownership
-ls -la ~/data/wordpress
-ls -la ~/data/mariadb
-
-# Fix permissions (if needed)
-sudo chown -R $(whoami):$(whoami) ~/data
-```
-
 #### Database initialization fails
 ```bash
 # Clear data and reinitialize
@@ -652,18 +530,7 @@ make
 docker logs mariadb
 ```
 
-### Best Practices
-
-1. **Always test changes locally** before committing
-2. **Use `make re`** for major changes to ensure clean state
-3. **Check logs** after every change
-4. **Backup data** before destructive operations
-5. **Keep `.env` secure** and never commit it
-6. **Document changes** in commit messages
-7. **Use meaningful variable names** in scripts
-8. **Follow the subject requirements** strictly
-
-### Useful Commands Cheat Sheet
+### Useful Commands
 
 ```bash
 # Quick status check
@@ -677,13 +544,3 @@ docker stats
 
 # Clean up everything
 make fclean
-
-# Interactive debugging
-docker exec -it <container> /bin/bash
-
-# Follow logs
-docker compose -f srcs/docker-compose.yml logs -f <service>
-
-# Check container IP
-docker inspect <container> | grep IPAddress
-```

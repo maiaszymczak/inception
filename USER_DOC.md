@@ -2,13 +2,6 @@
 
 This document explains how to use the Inception infrastructure as an end user or administrator.
 
-## Table of Contents
-- [Services Provided](#services-provided)
-- [Starting and Stopping](#starting-and-stopping)
-- [Accessing the Website](#accessing-the-website)
-- [Managing Credentials](#managing-credentials)
-- [Checking Service Health](#checking-service-health)
-
 ## Services Provided
 
 The Inception stack provides the following services:
@@ -76,7 +69,6 @@ To restart all services:
 ```bash
 make restart
 ```
-
 This is equivalent to running `make down` followed by `make`.
 
 ## Accessing the Website
@@ -87,12 +79,6 @@ Once the services are running, access the WordPress website at:
 
 **URL**: https://mszymcza.42.fr (or your configured domain)
 
-**Note**: Since the project uses a self-signed SSL certificate, your browser will show a security warning. This is normal for development environments.
-
-To bypass the warning:
-- **Chrome/Edge**: Click "Advanced" → "Proceed to site"
-- **Firefox**: Click "Advanced" → "Accept the Risk and Continue"
-- **Safari**: Click "Show Details" → "visit this website"
 
 ### WordPress Admin Panel
 
@@ -104,24 +90,11 @@ To access the administration dashboard:
 - **Username**: Value of `WP_ADMIN_USER`
 - **Password**: Value of `WP_ADMIN_PASSWORD`
 
-From the admin panel, you can:
-- Create and edit posts/pages
-- Manage users
-- Install themes and plugins
-- Configure site settings
-- View site analytics
-
 ## Managing Credentials
 
 ### Credential Storage Location
 
 All credentials are stored in the `.env` file located at `srcs/.env`.
-
-**⚠️ Security Warning**: Never commit the `.env` file to version control. It contains sensitive information.
-
-### Credentials Overview
-
-The following credentials are configured in your `.env` file:
 
 #### Database Credentials
 - `MYSQL_ROOT_PASSWORD`: MariaDB root password (administrative access)
@@ -281,33 +254,3 @@ docker compose -f srcs/docker-compose.yml ps
 docker logs <container-name>
 ```
 Look for error messages in the logs indicating configuration issues.
-
-## Data Backup
-
-Your persistent data is stored in:
-- **WordPress files**: `~/data/wordpress`
-- **Database files**: `~/data/mariadb`
-
-To backup your data:
-
-```bash
-# Create backup directory
-mkdir -p ~/inception-backups/$(date +%Y%m%d)
-
-# Copy data
-cp -r ~/data/wordpress ~/inception-backups/$(date +%Y%m%d)/
-cp -r ~/data/mariadb ~/inception-backups/$(date +%Y%m%d)/
-
-# Backup .env file
-cp srcs/.env ~/inception-backups/$(date +%Y%m%d)/
-```
-
-To restore from backup:
-
-```bash
-make down
-rm -rf ~/data/wordpress ~/data/mariadb
-cp -r ~/inception-backups/YYYYMMDD/wordpress ~/data/
-cp -r ~/inception-backups/YYYYMMDD/mariadb ~/data/
-make
-```
